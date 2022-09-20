@@ -54,7 +54,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     Color.fromRGBO(242, 113, 33, 1),
                   ])),
           ),
+
           Center(
+            /***************************************
+             * Canvas where all items are painted *
+             **************************************/
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -72,9 +76,39 @@ class _MyHomePageState extends State<MyHomePage> {
                     )
                   ]
                   ),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                /***************************************
+                 * Buttons at the Bottom of the screen *
+                 **************************************/
+                Container(
+                  width: width * 0.80,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(20.0))
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      ButtonBar(
+                        children: [
+                          IconButton(onPressed: null,
+                              icon: const Icon(Icons.color_lens)),
+                          IconButton(onPressed: null,
+                              icon: const Icon(Icons.layers_clear)),
+                          IconButton(onPressed: null,
+                              icon: const Icon(Icons.select_all))
+                        ],
+                      )
+                    ],
+                  ),
                 )
               ],
+
             ),
+
+
           )
         ]
     )
