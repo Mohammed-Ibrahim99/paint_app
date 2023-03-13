@@ -46,7 +46,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-  List<DrawingArea> points = [];
+  List<DrawingArea?> points = [];
   Color selectedColor = Colors.black;
   double? strokeWidth;
 
@@ -160,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     onPanEnd: (details)
                     {
                       this.setState(() {
-                        points.add(null!);
+                        points.add(null);
                       });
 
                     },
@@ -202,11 +202,16 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: <Widget>[
                       ButtonBar(
                         children: [
-                          IconButton(onPressed: (){
+                          IconButton(
+
+                              onPressed: (){
                             selectColour();
                           }, icon: Icon(Icons.color_lens, color: selectedColor,)),
 
-                          Expanded(child: Slider(
+                          Expanded(
+
+                              child: Slider(
+
                               min: 1.0,
                               max: 7.0,
                               activeColor: selectedColor,
@@ -243,7 +248,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
 class MyCustomPainter extends CustomPainter
 {
-  List<DrawingArea> points;
+  List<DrawingArea?> points;
   Color color;
   double strokeWidth;
 
@@ -261,13 +266,13 @@ class MyCustomPainter extends CustomPainter
       {
         if(points[x] != null && points[x+1] != null)
           {
-            Paint paint = points[x].areaPaint;
-            canvas.drawLine(points[x].point, points[x + 1].point, paint);
+            Paint paint = points[x]!.areaPaint;
+            canvas.drawLine(points[x]!.point, points[x + 1]!.point, paint);
           }
         else if (points[x] != null && points[x+1] == null)
           {
-            Paint paint = points[x].areaPaint;
-            canvas.drawPoints(PointMode.points, [points[x].point], paint);
+            Paint paint = points[x]!.areaPaint;
+            canvas.drawPoints(PointMode.points, [points[x]!.point], paint);
           }
       }
   }
