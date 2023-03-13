@@ -1,10 +1,14 @@
 // All credit goes to:
-// https://www.youtube.com/watch?v=Zv5T2C1oKus
+// https://www.youtube.com/watch?v=Zv5T2C1oKus for painter
+//
+// infinite canvas https://dev.to/sweesenkoh/flutter-infinite-scrolling-canvas-with-custompainter-32nn
+
 import 'dart:html';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+enum CanvasState { pan, draw }
 
 void main() {
   runApp(const MyApp());
@@ -49,6 +53,10 @@ class _MyHomePageState extends State<MyHomePage> {
   List<DrawingArea?> points = [];
   Color selectedColor = Colors.black;
   double? strokeWidth;
+  CanvasState canvasState = CanvasState.draw;
+  Offset offset = Offset(0, 0);
+
+
 
   @override
   void initState()
@@ -73,14 +81,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
               ),
             ),
-            // actions: <Widget>[
-            //   FlatButton(
-            //     onPressed: ()
-            //         {
-            //           Navigator.of(context).pop();
-            //         },
-            //     child: Text("Close"))
-            // ],
+
+            actions: <Widget>[
+              TextButton(
+                onPressed: ()
+                    {
+                      Navigator.of(context).pop();
+                    },
+                child: Text("Close")),
+
+            ],
           ),
 
       );
@@ -137,31 +147,46 @@ class _MyHomePageState extends State<MyHomePage> {
                     //User Tapping on screen
                     onPanDown: (details)
                     {
-                      this.setState((){points.add(DrawingArea(point: details.localPosition,
-                          areaPaint: Paint()
-                            ..strokeCap = StrokeCap.round
-                            ..isAntiAlias = true
-                            ..color = selectedColor
-                            ..strokeWidth = strokeWidth!));});
+                      setState((){
+                        if (canvasState == CanvasState.draw) {
+                          points.add(DrawingArea(point: details.localPosition - offset,
+                              areaPaint: Paint()
+                                ..strokeCap = StrokeCap.round
+                                ..isAntiAlias = true
+                                ..color = selectedColor
+                                ..strokeWidth = strokeWidth!));
+                        }
+                        }
+                        );
                     },
 
                     //User moving on screen
                     onPanUpdate: (details)
                     {
-                      this.setState((){points.add(DrawingArea(point: details.localPosition,
+                      setState((){
+                        if (canvasState == CanvasState.pan)
+                        {
+                          offset += details.delta;
+                        }
+                        else
+                        {
+                        points.add(DrawingArea(point: details.localPosition - offset,
                           areaPaint: Paint()
                             ..strokeCap = StrokeCap.round
                             ..isAntiAlias = true
                             ..color = selectedColor
-                            ..strokeWidth = strokeWidth!));});
+                            ..strokeWidth = strokeWidth!));
+                        }});
                     },
 
                     //User removing finger from screen
                     onPanEnd: (details)
                     {
-                      this.setState(() {
+                    if (canvasState == CanvasState.draw) {
+                      setState(() {
                         points.add(null);
                       });
+                    }
 
                     },
 
@@ -169,7 +194,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       borderRadius: BorderRadius.all(Radius.circular(20.0)),
                     child: CustomPaint
                            (
-                              painter: MyCustomPainter(points: points, color: selectedColor, strokeWidth: strokeWidth!),
+                              painter: MyCustomPainter(points: points, color: selectedColor, strokeWidth: strokeWidth!, offset: offset),
                            ),
                   ),
                   ),
@@ -208,25 +233,33 @@ class _MyHomePageState extends State<MyHomePage> {
                             selectColour();
                           }, icon: Icon(Icons.color_lens, color: selectedColor,)),
 
-                          Expanded(
-
-                              child: Slider(
-
-                              min: 1.0,
+                          Expanded
+                          (child: Slider
+                          (   min: 1.0,
                               max: 7.0,
                               activeColor: selectedColor,
                               value:strokeWidth!, onChanged:(value)
-                          {
-                            this.setState(() {
-                              strokeWidth = value;
-                            });
-                          })),
+                          {setState(() { strokeWidth = value;});
+
+                          })
+                          ),
 
                           IconButton(onPressed: (){
                             this.setState(() {
                               points.clear();
                             });
                           }, icon: Icon(Icons.layers_clear)),
+
+                          IconButton(
+
+                              onPressed: (){
+                            this.setState(() {
+                              canvasState = canvasState == CanvasState.draw
+                                  ? CanvasState.pan
+                                  : CanvasState.draw;
+
+                            });
+                          }, icon: Icon((canvasState == CanvasState.draw)? Icons.draw: Icons.pan_tool)),
                           
                         ],
                       )
@@ -251,8 +284,9 @@ class MyCustomPainter extends CustomPainter
   List<DrawingArea?> points;
   Color color;
   double strokeWidth;
+  Offset offset;
 
-  MyCustomPainter({required this.points, required this.color, required this.strokeWidth});
+  MyCustomPainter({required this.points, required this.color, required this.strokeWidth, required this.offset});
 
   @override
   void paint(Canvas canvas, Size size)
@@ -267,12 +301,12 @@ class MyCustomPainter extends CustomPainter
         if(points[x] != null && points[x+1] != null)
           {
             Paint paint = points[x]!.areaPaint;
-            canvas.drawLine(points[x]!.point, points[x + 1]!.point, paint);
+            canvas.drawLine(points[x]!.point + offset!, points[x + 1]!.point + offset!, paint);
           }
         else if (points[x] != null && points[x+1] == null)
           {
             Paint paint = points[x]!.areaPaint;
-            canvas.drawPoints(PointMode.points, [points[x]!.point], paint);
+            canvas.drawPoints(PointMode.points, [points[x]!.point + offset], paint);
           }
       }
   }
